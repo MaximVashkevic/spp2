@@ -1,41 +1,45 @@
 const { Router } = require("express");
-const render = require("../helpers/renderHelper");
 const bodyParser = require("body-parser");
 const app = require("../app");
 const ValidationError = require("../validationError");
-const { addMessage, messageTypes } = require("../helpers/popupMessageHelper");
 
 const router = new Router();
 
+// TODO: necessary?
 const urlencodedParser = bodyParser.urlencoded({
   extended: false,
 });
 router.use(urlencodedParser);
 
-router.get("/", async (req, res) => {
+router.get("/info", async (req, res) => {
   const allTransactions = await app.then((app) =>
-    app.info({ user: req.session.userID })
+    // TODO: id
+    app.info({ user: req.session.userId })
   );
+  // TODO: id
   const total = await app.then((app) => app.currentCash(req.session.userID));
-  render(req, res, "main", "home", true, {
-    accountInfo: {
-      total: total.toFixed(2),
-      transactions: allTransactions,
-    },
+  res.json({
+    total: total.toFixed(2),
+    transactions: allTransactions,
   });
 });
 
 router.get("/history", async (req, res) => {
-  const transactions = await getHistoryTransactions(req);
-  render(req, res, "history", "History", true, {
-    accountInfo: {
-      transactions: transactions,
-    },
+  const history = await app.then((app) =>
+      // TODO: id
+    app.history({ user: req.session.userId })
+  );
+  const transactions = history.map((transaction) => {
+    return {
+      symbol: transaction.Symbol.symbol,
+      name: transaction.Symbol.companyName,
+      shares: transaction.shares,
+      price: transaction.price,
+      total: transaction.price * transaction.shares,
+      time: transaction.time,
+    };
   });
-});
-
-router.get("/register", (req, res) => {
-  renderRegister(req, res);
+  res.json(transactions);
 });
 
 router.post("/login", async (req, res) => {
@@ -44,25 +48,16 @@ router.post("/login", async (req, res) => {
   await app
     .then((app) => app.logIn({ login, password }))
     .then((result) => {
-      req.session.userID = result;
-      req.session.save();
-      res.redirect("/");
+      // TODO: change with jwt cookie
+      res.send(result.id);
     })
     .catch((err) => {
-      addMessage(req, messageTypes.DANGER, err.message);
-      renderLogin(req, res);
+      res.status(401);
+      res.set("WWW-Authenticate", "Bearer realm=jobbing.com");
+      res.json({
+        errors: [err.message],
+      });
     });
-});
-
-router.get("/login", (req, res) => {
-  console.log(req.session);
-  renderLogin(req, res);
-});
-
-router.get("/logOut", (req, res) => {
-  delete req.session.userID;
-  req.session.save();
-  res.redirect("/");
 });
 
 router.post("/register", urlencodedParser, async (req, res) => {
@@ -76,46 +71,22 @@ router.post("/register", urlencodedParser, async (req, res) => {
         password_confirmation: password_confirm,
       })
     )
-    .then((result) => {
-      addMessage(req, messageTypes.SUCCESS, "User created.");
-      req.session.save();
-      res.redirect("/login");
+    .then(() => {
+      res.status(200);
+      res.send();
     })
     .catch((err) => {
+      let messages = [];
       if (err instanceof ValidationError) {
-        for (const message of err.messages) {
-          addMessage(req, messageTypes.DANGER, message);
-        }
+        messages = err.messages;
       } else {
-        addMessage(req, messageTypes.DANGER, err.message);
+        messages.push(err.message);
       }
-      renderRegister(req, res);
+      res.status(422);
+      res.json({
+        errors: messages,
+      });
     });
 });
 
-function renderLogin(req, res) {
-  render(req, res, "login", "login", false);
-}
-
-function renderRegister(req, res) {
-  render(req, res, "register", "register", false);
-}
-
 module.exports = router;
-
-async function getHistoryTransactions(req) {
-  const history = await app.then((app) =>
-    app.history({ user: req.session.userID })
-  );
-  const transactions = history.map((transaction) => {
-    return {
-      symbol: transaction.Symbol.symbol,
-      name: transaction.Symbol.companyName,
-      shares: transaction.shares,
-      price: transaction.price,
-      total: transaction.price * transaction.shares,
-      time: transaction.time,
-    };
-  });
-  return transactions;
-}

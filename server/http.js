@@ -9,6 +9,7 @@ const mainRouter = require("./routers/mainRouter");
 (async () => {
   const server = express();
 
+  server.use(express.json())
   server.use(cookieParser());
   server.use(
     session({ secret: "keyboard cat", resave: false, saveUninitialized: true })
