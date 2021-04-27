@@ -9,26 +9,26 @@ stockRouter.get("/search", async (req, res) => {
   res.json(results);
 });
 
-stockRouter.get("/:symbol", cors(corsOptions), async (req, res) => {
+stockRouter.get("/:symbol", async (req, res) => {
   let symbol = req.params.symbol;
-  // TODO: id
   let info = await app.then((app) =>
-    app.getStockInfo(symbol, req.session.userId)
+    app.getStockInfo(symbol, req.userId)
   );
-  res.render(info);
+  res.json(info)
 });
 
 stockRouter.post("/buy", async (req, res) => {
+  console.log(req)
   const symbol = req.body.symbol;
   const amount = req.body.amount;
   await app
-    // TODO: id
-    .then((app) => app.buy({ symbol, amount, user: req.session.userId }))
+    .then((app) => app.buy({ symbol, amount, userId: req.userId }))
     .then(() => {
       res.status(200);
       res.send();
     })
-    .catch(() => {
+    .catch((err) => {
+      console.log(err)
       res.status(422);
       res.json({ errors: ["Can't buy shares"] });
     });
@@ -38,8 +38,7 @@ stockRouter.post("/sell", async (req, res) => {
   const symbol = req.body.symbol;
   const amount = req.body.amount;
   await app
-    // TODO: id
-    .then((app) => app.sell({ symbol, amount, user: req.session.userId }))
+    .then((app) => app.sell({ symbol, amount, userId: req.userId }))
     .then(() => {
       res.status(200);
       res.send();

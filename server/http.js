@@ -1,6 +1,5 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
-const session = require("express-session");
 const authorizationMiddleware = require("./middlewares/authorizationMiddleware");
 
 const stockRouter = require("./routers/stockRouter");
@@ -11,11 +10,7 @@ const mainRouter = require("./routers/mainRouter");
 
   server.use(express.json())
   server.use(cookieParser());
-  server.use(
-    session({ secret: "keyboard cat", resave: false, saveUninitialized: true })
-  );
 
-  server.use(clearMessagesMiddleware);
   server.use(authorizationMiddleware);
 
   server.use("/", mainRouter);

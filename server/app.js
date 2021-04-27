@@ -52,11 +52,11 @@ class App {
     })();
   }
 
-  async getStockInfo(symbol, userID) {
+  async getStockInfo(symbol, userId) {
     return {
       symbolData: await this.getStockCommonInfo(symbol),
       chartData: await this.getGraphData(symbol),
-      userShares: await this.getSharesCount(symbol, userID.id),
+      userShares: await this.getSharesCount(symbol, userId),
     };
   }
 

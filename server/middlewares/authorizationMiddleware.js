@@ -1,15 +1,14 @@
-
 const authorizationRule = require("../authorizedRoutes");
-const {addMessage, messageTypes} = require("../helpers/popupMessageHelper")
 
 module.exports = (req, res, next) => {
-    if (
-       authorizationRule(req.path) && !req.session.userID
-    ) {
-      addMessage(req, messageTypes.INFO, "Please log in or register");
-      res.redirect("/login");
-    }
-    else {
-        next()
-    }
+  if (authorizationRule(req.path) && !(req.cookies && req.cookies.userId)) {
+    res.status(401);
+    res.set("WWW-Authenticate", "Bearer realm=jobbing.com");
+    res.json({
+      errors: ["Please login to access the site"],
+    });
+  } else {
+    req.userId = req.cookies.userId;
+    next();
   }
+};

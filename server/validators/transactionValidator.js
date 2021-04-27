@@ -3,7 +3,7 @@ const Validator = require('validatorjs')
 const rules = {
     symbol: 'required',
     amount: 'required|integer|min:1',
-    user: 'required'
+    userId: 'required'
 }
 
 module.exports = (transaction) => {

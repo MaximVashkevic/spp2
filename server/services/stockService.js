@@ -5,6 +5,7 @@ async function buy(shareParams) {
   const db = this.db;
   const TransactionModel = db.models.Transaction;
   const SymbolModel = db.models.Symbol;
+  const UserModel = db.models.User;
   const transactionValidator = TransactionValidator(shareParams);
   if (!transactionValidator.passes()) {
     throw new Error("Invalid symbol or amount of shares");
@@ -12,8 +13,8 @@ async function buy(shareParams) {
 
   const symbolPrice = await this.lookup(shareParams.symbol);
   const total = symbolPrice * shareParams.amount;
-
-  if (shareParams.user.amount - total < 0) {
+  const user = await User.findOne({ where: { id: shareParams.userId } });
+  if (user.amount - total < 0) {
     throw new Error("Not enough money");
   }
 
@@ -29,7 +30,7 @@ async function buy(shareParams) {
 
       await TransactionModel.create(
         {
-          userId: shareParams.user.id,
+          userId: shareParams.userId,
           symbolId: symbol.id,
           shares: shareParams.amount,
           price: symbolPrice,
@@ -38,7 +39,7 @@ async function buy(shareParams) {
       );
 
       try {
-        await User.findOne({ where: { id: shareParams.user.id } }).then(
+        await User.findOne({ where: { id: shareParams.userId } }).then(
           (user) => {
             user.amount -= total;
             return user.save({ transaction: t });
@@ -98,7 +99,7 @@ async function sell(shareParams) {
         }
         await TransactionModel.create(
           {
-            userId: shareParams.user.id,
+            userId: shareParams.userId,
             symbolId: symbol.id,
             shares: -shareParams.amount,
             price: symbolPrice,
@@ -106,7 +107,7 @@ async function sell(shareParams) {
           { transaction: t }
         );
         try {
-            await User.findOne({ where: { id: shareParams.user.id } }).then(
+            await User.findOne({ where: { id: shareParams.userId } }).then(
               (user) => {
                 user.amount += total;
                 return user.save({ transaction: t });
@@ -143,7 +144,7 @@ async function getCompanyName(iex, symbol) {
 }
 
 async function info(params) {
-  if (typeof params?.user === "undefined") {
+  if (typeof params?.userId === "undefined") {
     throw new Error("Invalid params");
   }
   const Transaction = this.db.models.Transaction;
@@ -152,7 +153,7 @@ async function info(params) {
 
   try {
     return await Transaction.findAll({
-      where: { userId: params.user.id },
+      where: { userId: params.userId },
       include: [Symbol],
       group: ["symbolId"],
       attributes: {
@@ -175,8 +176,8 @@ async function info(params) {
   }
 }
 
-async function history(params) {
-  if (typeof params?.user === "undefined") {
+async function history(userId) {
+  if (typeof userId === "undefined") {
     throw new Error("Invalid params");
   }
 
@@ -184,10 +185,11 @@ async function history(params) {
   const Symbol = this.db.models.Symbol;
   try {
     return Transaction.findAll({
-      where: { userId: params.user.id },
+      where: { userId: userId },
       include: [Symbol],
     });
   } catch (err) {
+    console.log(err)
     throw new Error("server error");
   }
 }

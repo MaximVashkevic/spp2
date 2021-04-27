@@ -13,11 +13,9 @@ router.use(urlencodedParser);
 
 router.get("/info", async (req, res) => {
   const allTransactions = await app.then((app) =>
-    // TODO: id
-    app.info({ user: req.session.userId })
+    app.info({ userId: req.userId })
   );
-  // TODO: id
-  const total = await app.then((app) => app.currentCash(req.session.userID));
+  const total = await app.then((app) => app.currentCash(req.userId)).catch(err => console.log(err));
   res.json({
     total: total.toFixed(2),
     transactions: allTransactions,
@@ -26,9 +24,9 @@ router.get("/info", async (req, res) => {
 
 router.get("/history", async (req, res) => {
   const history = await app.then((app) =>
-      // TODO: id
-    app.history({ user: req.session.userId })
+    app.history(req.userId)
   );
+  console.log(history)
   const transactions = history.map((transaction) => {
     return {
       symbol: transaction.Symbol.symbol,
@@ -49,7 +47,7 @@ router.post("/login", async (req, res) => {
     .then((app) => app.logIn({ login, password }))
     .then((result) => {
       // TODO: change with jwt cookie
-      res.send(result.id);
+      res.cookie("userId", result.id, {maxAge: 900000, httpOnly: true}).send()
     })
     .catch((err) => {
       res.status(401);
