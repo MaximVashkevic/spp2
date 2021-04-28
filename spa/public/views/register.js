@@ -1,3 +1,5 @@
+import AuthService from "../services/authService.js";
+
 const html = `<form id="registerForm" action="#/register" method="post">
     <fieldset>
         <div class="form-group">
@@ -22,9 +24,9 @@ const Register = {
         const registerForm = document.querySelector('#registerForm')
         registerForm.addEventListener('submit', async e => {
             e.preventDefault();
-            const login = loginForm['loginField'].value
-            const password = loginForm['passwordField'].value
-            const passwordConfirm = loginForm['passwordConfirmField'].value
+            const login = registerForm['loginField'].value
+            const password = registerForm['passwordField'].value
+            const passwordConfirm = registerForm['passwordConfirmField'].value
             await AuthService.register(login, password, passwordConfirm)
         })
     }

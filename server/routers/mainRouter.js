@@ -97,4 +97,15 @@ router.post("/register", urlencodedParser, async (req, res) => {
     });
 });
 
+router.delete("/logout", async (req, res) => {
+  if (req.userId) {
+    res.status(401)
+    .clearCookie('userId')
+    .send()
+  }
+  else {
+    res.status(401).send()
+  }
+})
+
 module.exports = router;

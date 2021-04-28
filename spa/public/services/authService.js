@@ -15,11 +15,18 @@ const AuthService = {
         return false
     },
     async register(login, password, passwordConfirm) {
-        const response = await FetchHelper.fetchData('register', 'POST', {login, password, password_confirmation: passwordConfirm})
-        MessageHelper.addMessages(response.json())
+        const response = await FetchHelper.fetchData('register', 'POST', {login, password, password_confirm: passwordConfirm})
+        MessageHelper.addMessages((await response.json()).messages)
         if (response.status === 200) {
             window.location.hash = "#/login"
         }
+        else {
+            await MessageHelper.renderMessages()
+        }
+    },
+    async logOut() {
+        await FetchHelper.fetchData('logout', 'DELETE')
+
     }
 }
 

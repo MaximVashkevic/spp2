@@ -8,6 +8,7 @@ import Stock from "./views/stock.js";
 import BaseService from "./services/baseService.js";
 import Navbar from "./views/navbar.js";
 import StockService from "./services/stockService.js";
+import MessageHelper from "./helpers/messageHelper.js";
 
 const pages = {
     "/": MainPage,
@@ -19,6 +20,7 @@ const pages = {
 };
 
 const router = async () => {
+    await MessageHelper.renderMessages()
     const content = document.querySelector("#site-content");
     const header = document.querySelector("#nav");
 
@@ -65,6 +67,14 @@ const router = async () => {
             }
             break;
         }
+        case Search: {
+            const symbol = routeParts[2]
+            const results = await StockService.search(symbol)
+            if (results) {
+                content.innerHTML = await page.render(results)
+            }
+            break;
+        }
 
         default: {
             content.innerHTML = await page.render();
@@ -75,11 +85,14 @@ const router = async () => {
 
     const isAuthorized = !["register", "login"].some(e => e === UrlHelper.getRouteParts()[0])
     header.innerHTML = await Navbar.render({isAuthorized})
+    await Navbar.afterRender({isAuthorized})
 
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
 };
 
+MessageHelper.clearMessages()
 window.addEventListener("hashchange", router);
 window.addEventListener("DOMContentLoaded", router);
 window.addEventListener("DOMContentLoaded", () => alert('loaded'))
+window.location.hash="#/"

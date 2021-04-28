@@ -1,3 +1,5 @@
+import Messages from "../views/messages.js";
+
 const messagesKey = "MESSAGES"
 
 /*
@@ -17,6 +19,10 @@ let MessageHelper = {
     },
     getMessages() {
         return JSON.parse(sessionStorage.getItem(messagesKey)) ?? []
+    },
+    async renderMessages() {
+        const messages = document.querySelector("#messages")
+        messages.innerHTML = await Messages.render()
     }
 }
 

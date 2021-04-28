@@ -60,7 +60,7 @@ async function getSharesCount(symbol, userId) {
   const TransactionModel = this.db.models.Transaction;
 
   return await SymbolModel.findOne({
-    where: { symbol: symbol },
+    where: { symbol: symbol.toUpperCase() },
   }).then(async (symbol) => {
     if (symbol) {
       const shares = await TransactionModel.sum("shares", {

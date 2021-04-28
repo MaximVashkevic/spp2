@@ -1,3 +1,5 @@
+import StockService from "../services/stockService.js";
+
 const html =`<div class="row">
   <div class="col-md-6">
     <div class="panel panel-default same" id="company-info">
@@ -32,7 +34,7 @@ const html =`<div class="row">
     </ul>
     <div class="tab-content">
       <div id="buy" class="tab-pane fade in active">
-        <form action="/stock/buy" method="POST">
+        <form id="buyForm" action="/stock/buy" method="POST">
           <div class="input-group">
             <input
               type="number"
@@ -50,7 +52,7 @@ const html =`<div class="row">
         </form>
       </div>
       <div id="sell" class="tab-pane fade">
-        <form action="/stock/sell" method="POST">
+        <form id="sellForm" action="/stock/sell" method="POST">
           <div class="input-group">
             <input
               type="number"
@@ -78,26 +80,41 @@ const Stock = {
         return await ejs.render(html, {symbolData, chartData, userShares})
     },
     afterRender: async (chartData) => {
-        console.log(chartData)
-
-          var ctx = document.getElementById('chart').getContext('2d');
-          ctx.canvas.width = 600;
-          ctx.canvas.height = 400;
-          var chart = new Chart(ctx, {
-              type: 'candlestick',
-              data: {
-                  datasets: [{
-          label: '',
-                    data: chartData.data
-                    }]
-              },
-                  options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                  }
-
-        });
+        await generateChart(chartData)
+        const sellForm = document.querySelector('#sellForm')
+        await setStockFormListener(sellForm, 'stock/sell')
+        const buyForm = document.querySelector('#buyForm')
+        await setStockFormListener(buyForm, 'stock/buy')
     }
+}
+
+async function setStockFormListener(form, requestUrl) {
+    form.addEventListener('submit', async e => {
+        e.preventDefault()
+        const amount = form['amount'].value
+        const symbol = form['symbol'].value
+        await StockService.stockOperation(requestUrl, symbol, amount)
+    })
+}
+
+async function generateChart(chartData) {
+    var ctx = document.getElementById('chart').getContext('2d');
+    ctx.canvas.width = 600;
+    ctx.canvas.height = 400;
+    var chart = new Chart(ctx, {
+        type: 'candlestick',
+        data: {
+            datasets: [{
+                label: '',
+                data: chartData.data
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+
+    });
 }
 
 export default Stock
