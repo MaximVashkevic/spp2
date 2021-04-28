@@ -5,7 +5,11 @@ const stockRouter = new Router();
 
 stockRouter.get("/search", async (req, res) => {
   const query = req.query.query;
-  const results = await app.then((app) => app.search(query));
+  let results = await app.then((app) => app.search(query));
+  if (results.results.length === 0)
+  {
+    results.messages = [{type: 'info', message: 'No results found'}]
+  }
   res.json(results);
 });
 
@@ -24,13 +28,14 @@ stockRouter.post("/buy", async (req, res) => {
   await app
     .then((app) => app.buy({ symbol, amount, userId: req.userId }))
     .then(() => {
-      res.status(200);
+      res.status(200)
+      .json({ messages: [{type: 'success', text: "Shares were bought successfully"}] })
       res.send();
     })
     .catch((err) => {
       console.log(err)
       res.status(422);
-      res.json({ errors: ["Can't buy shares"] });
+      res.json({ messages: [{type: 'danger', text: "Can't buy shares"}] });
     });
 });
 
@@ -40,12 +45,13 @@ stockRouter.post("/sell", async (req, res) => {
   await app
     .then((app) => app.sell({ symbol, amount, userId: req.userId }))
     .then(() => {
-      res.status(200);
+      res.status(200)
+      .json({ messages: [{type: 'success', text: "Shares were sold successfully"}] })
       res.send();
     })
     .catch(() => {
       res.status(422);
-      res.json({ errors: ["Can't sell shares"] });
+      res.json({ messages: [{type: 'danger', text: "Can't sell shares"}] });
     });
 });
 

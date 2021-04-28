@@ -47,13 +47,15 @@ router.post("/login", async (req, res) => {
     .then((app) => app.logIn({ login, password }))
     .then((result) => {
       // TODO: change with jwt cookie
-      res.cookie("userId", result.id, {maxAge: 900000, httpOnly: true}).send()
+      res
+        .cookie("userId", result.id, {maxAge: 900000, httpOnly: true, secure: true, sameSite: 'None'})
+        .send()
     })
     .catch((err) => {
       res.status(401);
       res.set("WWW-Authenticate", "Bearer realm=jobbing.com");
       res.json({
-        errors: [err.message],
+        messages: [{ type: 'danger', text: err.message}],
       });
     });
 });
@@ -70,19 +72,27 @@ router.post("/register", urlencodedParser, async (req, res) => {
       })
     )
     .then(() => {
-      res.status(200);
+      res.status(200)
+      .json({
+        messages: [
+          {
+            type: 'success',
+            text: 'User was created successfully'
+          }
+        ]
+      })
       res.send();
     })
     .catch((err) => {
       let messages = [];
       if (err instanceof ValidationError) {
-        messages = err.messages;
+        messages = err.messages.map(message => ({type: 'danger', text: message}))
       } else {
-        messages.push(err.message);
+        messages.push({type: 'danger', text: err.message});
       }
       res.status(422);
       res.json({
-        errors: messages,
+        messages: messages,
       });
     });
 });
