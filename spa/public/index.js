@@ -6,6 +6,8 @@ import History from "./views/history.js";
 import Search from "./views/search.js";
 import Stock from "./views/stock.js";
 import BaseService from "./services/baseService.js";
+import Navbar from "./views/navbar.js";
+import StockService from "./services/stockService.js";
 
 const pages = {
     "/": MainPage,
@@ -18,8 +20,8 @@ const pages = {
 
 const router = async () => {
     const content = document.querySelector("#site-content");
+    const header = document.querySelector("#nav");
 
-    const isAuthorized = document.cookie.includes("userId");
     const routeParts = UrlHelper.getRouteParts();
     let url
     if (routeParts[0] === "stock") {
@@ -55,6 +57,14 @@ const router = async () => {
             }
             break;
         }
+        case Stock: {
+            const results = await StockService.stock(routeParts[1])
+            if (results) {
+                content.innerHTML = await page.render(results.symbolData, results.chartData, results.userShares)
+                await page.afterRender(results.chartData)
+            }
+            break;
+        }
 
         default: {
             content.innerHTML = await page.render();
@@ -63,9 +73,13 @@ const router = async () => {
         }
     }
 
+    const isAuthorized = !["register", "login"].some(e => e === UrlHelper.getRouteParts()[0])
+    header.innerHTML = await Navbar.render({isAuthorized})
+
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
 };
 
 window.addEventListener("hashchange", router);
 window.addEventListener("DOMContentLoaded", router);
+window.addEventListener("DOMContentLoaded", () => alert('loaded'))

@@ -1,25 +1,24 @@
-const html = `<nav className="navbar navbar-default">
-    <div className="container-fluid">
-        <div className="navbar-header">
+const html = `
+    <div class="container-fluid">
+        <div class="navbar-header">
             <button
                 aria-expanded="false"
-                className="navbar-toggle collapsed"
+                class="navbar-toggle collapsed"
                 data-target="#navbar"
                 data-toggle="collapse"
                 type="button"
             >
-                <span className="sr-only">Toggle navigation</span>
-                <span className="icon-bar"></span>
-                <span className="icon-bar"></span>
-                <span className="icon-bar"></span>
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
             </button>
-            <a className="navbar-brand" href="/">Jobbing</a>
+            <a class="navbar-brand" href="#/">Jobbing</a>
         </div>
-        <div className="collapse navbar-collapse" id="navbar">
-            <
-            % if (isAuthorized) {%>
+        <div class="collapse navbar-collapse" id="navbar">
+            <% if (isAuthorized) { %>
             <ul class="nav navbar-nav">
-            <li><a href="/history">History</a></li>
+            <li><a href="#/history">History</a></li>
             </ul>
             <form class="navbar-form navbar-left" action="/stock/search" method="GET">
             <div class="input-group">
@@ -32,21 +31,20 @@ const html = `<nav className="navbar navbar-default">
             </div>
             </form>
             <ul class="nav navbar-nav navbar-right">
-            <li><a href="/logOut">Log Out</a></li>
+            <li><a href="#/logOut">Log Out</a></li>
             </ul>
             <%} else {%>
             <ul class="nav navbar-nav navbar-right">
-            <li><a href="/register">Register</a></li>
-            <li><a href="/login">Log In</a></li>
+            <li><a href="#/register">Register</a></li>
+            <li><a href="#/login">Log In</a></li>
             </ul>
             <%} %>
             </div>
-        </div>
-</nav>`
+        </div>`
 
 const Navbar = {
     render: async (options) => {
-        return ejs.render(html, options)
+        return await ejs.render(html, options)
     }
 }
 
