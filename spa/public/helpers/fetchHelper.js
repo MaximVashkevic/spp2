@@ -12,8 +12,11 @@ const FetchHelper = {
                 credentials: 'include', // include, *same-origin, omit
                 headers: {"Accept": "application/json", "Content-Type": "application/json"},
                 // mode: "no-cors",
-                body: JSON.stringify(data) // body data type must match "Content-Type" header
+                body: (method === 'GET' || method === 'HEAD') ? null : JSON.stringify(data) // body data type must match "Content-Type" header
             });
+            if (response.status === 401) {
+                window.location.hash = "#/login"
+            }
             return response
         }
         catch (err) {

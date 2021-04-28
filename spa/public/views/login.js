@@ -24,7 +24,6 @@ const Login = {
     ,
     afterRender: async() => {
         const loginForm = document.querySelector('#loginForm')
-        let isSuccessful = true
         loginForm.addEventListener('submit', async e => {
             e.preventDefault();
             const login = loginForm['loginField'].value
